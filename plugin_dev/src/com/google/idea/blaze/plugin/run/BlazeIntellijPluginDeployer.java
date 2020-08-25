@@ -63,7 +63,6 @@ class BlazeIntellijPluginDeployer {
       Key.create(BlazeIntellijPluginDeployer.class.getName());
 
   private final String sandboxHome;
-  private final String buildNumber;
   private final Label pluginTarget;
   private final List<File> deployInfoFiles = new ArrayList<>();
   private final Map<File, File> filesToDeploy = Maps.newHashMap();
@@ -130,7 +129,7 @@ class BlazeIntellijPluginDeployer {
                   return null;
                 });
 
-    return new DeployedPluginInfo(readPluginIds(filesToDeploy.keySet()), javaAgentJars);
+    return new DeployedPluginInfo(javaAgentJars);
   }
 
   /** Blocks until the plugin files have been copied to the sandbox */
@@ -194,19 +193,6 @@ class BlazeIntellijPluginDeployer {
     return new File(sandboxHome, "plugins");
   }
 
-  private ImmutableSet<String> readPluginIds(Collection<File> files) throws ExecutionException {
-    ImmutableSet.Builder<String> pluginIds = ImmutableSet.builder();
-    for (File file : files) {
-      if (file.getName().endsWith(".jar")) {
-        String pluginId = readPluginIdFromJar(buildNumber, file);
-        if (pluginId != null) {
-          pluginIds.add(pluginId);
-        }
-      }
-    }
-    return pluginIds.build();
-  }
-
   @Nullable
   private static String readPluginIdFromJar(String buildNumber, File jar)
       throws ExecutionException {
@@ -235,11 +221,9 @@ class BlazeIntellijPluginDeployer {
   }
 
   static class DeployedPluginInfo {
-    final ImmutableSet<String> pluginIds;
     final ImmutableSet<File> javaAgents;
 
-    DeployedPluginInfo(ImmutableSet<String> pluginIds, ImmutableSet<File> javaAgents) {
-      this.pluginIds = pluginIds;
+    DeployedPluginInfo(ImmutableSet<File> javaAgents) {
       this.javaAgents = javaAgents;
     }
   }
